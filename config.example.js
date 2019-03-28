@@ -2,7 +2,9 @@
 /*
     globals module
 */
-var _domain = 'http://localhost:3000/';
+var realDomain = "localhost:3000";
+var realHost = "http://" + realDomain;
+var _domain = realHost + "/";
 
 // You can `kill -USR2` the node process and it will write out a heap dump.
 // If your system doesn't support dumping, comment this out and install with
@@ -19,9 +21,10 @@ var domain = ' ' + _domain;
 // Content-Security-Policy
 var baseCSP = [
     "default-src 'none'",
-    "style-src 'unsafe-inline' 'self' " + domain,
-    "script-src 'self'" + domain,
-    "font-src 'self' data:" + domain,
+    "style-src 'unsafe-inline' 'self' " + realDomain,
+    // "script-src 'self'" + realDomain,
+    "font-src 'self' data: " + realDomain,
+    "worker-src " + realHost,
 
     /*  child-src is used to restrict iframes to a set of allowed domains.
      *  connect-src is used to restrict what domains can connect to the websocket.
@@ -29,22 +32,22 @@ var baseCSP = [
      *  it is recommended that you configure these fields to match the
      *  domain which will serve your CryptPad instance.
      */
-    "child-src blob: *",
+    "child-src " + realHost,
     // IE/Edge
-    "frame-src blob: *",
+    "frame-src 'self' blob:",
 
     /*  this allows connections over secure or insecure websockets
         if you are deploying to production, you'll probably want to remove
         the ws://* directive, and change '*' to your domain
      */
-    "connect-src 'self' ws: wss: blob:" + domain,
+    "connect-src 'self' " + realHost + " wss://" + realDomain + " " + realDomain + " blob: " + realDomain,
 
     // data: is used by codemirror
-    "img-src 'self' data: blob:" + domain,
+    "img-src data: * blob:",
     "media-src * blob:",
 
     // for accounts.cryptpad.fr authentication and cross-domain iframe sandbox
-    "frame-ancestors *",
+    // "frame-ancestors *",
 ];
 
 
@@ -91,11 +94,11 @@ module.exports = {
     },
 
     contentSecurity: baseCSP.join('; ') +
-        "script-src 'self'" + domain,
+        "; script-src 'self'" + domain,
 
     // CKEditor and OnlyOffice require significantly more lax content security policy in order to function.
     padContentSecurity: baseCSP.join('; ') +
-        "script-src 'self' 'unsafe-eval' 'unsafe-inline'" + domain,
+        "; script-src 'self' 'unsafe-eval' 'unsafe-inline'" + domain,
 
     /* it is recommended that you serve CryptPad over https
      * the filepaths below are used to configure your certificates
